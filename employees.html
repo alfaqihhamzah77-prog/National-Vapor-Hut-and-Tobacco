@@ -1,76 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Employee Panel</title>
+<meta charset="UTF-8">
+<title>نظام الموظف</title>
+<style>
+body { font-family: Arial, sans-serif; padding: 20px; background:#f0f0f0; }
+input, button { padding: 10px; margin:5px 0; width: 200px; }
+.result { margin-top: 20px; font-size: 18px; }
+</style>
 </head>
 <body>
-  <h2>Employee Login</h2>
-  <input type="password" id="password" placeholder="Enter password">
-  <button onclick="checkPassword()">Login</button>
+<h2>نظام الموظف</h2>
+<input type="text" id="cardId" placeholder="رقم البطاقة"><br>
+<input type="number" id="amount" placeholder="المبلغ"><br>
+<input type="password" id="pass" placeholder="كلمة السر"><br>
 
-  <div id="panel" style="display:none;">
-    <h3>Add Points</h3>
-    <input type="text" id="cardID" placeholder="Enter Card ID">
-    <input type="number" id="amount" placeholder="Enter Amount ($)">
-    <button onclick="addPoints()">Add Points</button>
+<button onclick="addPoints()">إضافة نقاط</button>
+<button onclick="resetPoints()">تصريف النقاط</button>
 
-    <h3>Redeem Points</h3>
-    <input type="number" id="redeemPoints" placeholder="Points to redeem">
-    <button onclick="redeemPoints()">Redeem Points</button>
+<div class="result" id="result"></div>
 
-    <p id="message"></p>
-  </div>
+<script>
+const scriptUrl = 'https://script.google.com/macros/s/AKfycbyNAyrMBpk68FtcRl6WX_U4vth3HzMu4k-Bjv0VB6XLK6KZPn_J88sXRO1ORGUsSG0F/exec';
 
-  <script>
-    const PASSWORD = "778475750
-    const API_URL = "https://script.google.com/macros/s/AKfycbxznyH_1znd4V63C1z8yiKRGwNbfWGYjIaIcaolWMvufAv7aKe-QzMg0NP_hcouvWcq/exec
+function addPoints() {
+    const cardId = document.getElementById('cardId').value;
+    const amount = document.getElementById('amount').value;
+    const pass = document.getElementById('pass').value;
+    if(!cardId || !amount || !pass) { alert('املأ جميع الحقول'); return; }
 
-    function checkPassword() {
-      const input = document.getElementById("password").value;
-      if(input === PASSWORD) {
-        document.getElementById("panel").style.display = "block";
-        document.getElementById("password").style.display = "none";
-        document.querySelector('button').style.display = "none";
-      } else {
-        alert("Incorrect password");
-      }
-    }
+    fetch(`${scriptUrl}?action=add&cardId=${cardId}&amount=${amount}&pass=${pass}`)
+    .then(response => response.json())
+    .then(data => {
+        if(data.error) {
+            document.getElementById('result').innerHTML = data.error;
+        } else {
+            document.getElementById('result').innerHTML = `تم إضافة النقاط. النقاط الحالية: ${data.points}`;
+        }
+    });
+}
 
-    async function addPoints() {
-      const cardID = document.getElementById("cardID").value.trim();
-      const amount = parseFloat(document.getElementById("amount").value);
-      if (!cardID || isNaN(amount)) {
-        document.getElementById("message").innerText = "Enter valid Card ID and Amount";
-        return;
-      }
-      const pointsToAdd = Math.floor(amount / 10);
-      const url = `${API_URL}?action=add&cardID=${encodeURIComponent(cardID)}&points=${pointsToAdd}`;
-      try {
-        const resp = await fetch(url);
-        const result = await resp.text();
-        document.getElementById("message").innerText = result;
-      } catch(e) {
-        document.getElementById("message").innerText = "Error occurred, please try again";
-      }
-    }
+function resetPoints() {
+    const cardId = document.getElementById('cardId').value;
+    const pass = document.getElementById('pass').value;
+    if(!cardId || !pass) { alert('املأ جميع الحقول'); return; }
 
-    async function redeemPoints() {
-      const cardID = document.getElementById("cardID").value.trim();
-      const points = parseInt(document.getElementById("redeemPoints").value);
-      if (!cardID || isNaN(points)) {
-        document.getElementById("message").innerText = "Enter valid Card ID and points";
-        return;
-      }
-      const url = `${API_URL}?action=redeem&cardID=${encodeURIComponent(cardID)}&points=${points}`;
-      try {
-        const resp = await fetch(url);
-        const result = await resp.text();
-        document.getElementById("message").innerText = result;
-      } catch(e) {
-        document.getElementById("message").innerText = "Error occurred, please try again";
-      }
-    }
-  </script>
+    fetch(`${scriptUrl}?action=reset&cardId=${cardId}&pass=${pass}`)
+    .then(response => response.json())
+    .then(data => {
+        if(data.error) {
+            document.getElementById('result').innerHTML = data.error;
+        } else {
+            document.getElementById('result').innerHTML = `تم تصفير النقاط. النقاط الحالية: ${data.points}`;
+        }
+    });
+}
+</script>
 </body>
 </html>
