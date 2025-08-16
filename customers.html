@@ -2,26 +2,73 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Check Your Points</title>
+  <title>Employee Panel</title>
 </head>
 <body>
-  <h2>Check Your Points</h2>
-  <input type="text" id="cardID" placeholder="Enter your Card ID">
-  <button onclick="checkPoints()">Show Points</button>
-  <p id="result"></p>
+  <h2>Employee Login</h2>
+  <input type="password" id="password" placeholder="Enter password">
+  <button onclick="checkPassword()">Login</button>
+
+  <div id="panel" style="display:none;">
+    <h3>Add Points</h3>
+    <input type="text" id="cardID" placeholder="Enter Card ID">
+    <input type="number" id="amount" placeholder="Enter Amount ($)">
+    <button onclick="addPoints()">Add Points</button>
+
+    <h3>Redeem Points</h3>
+    <input type="number" id="redeemPoints" placeholder="Points to redeem">
+    <button onclick="redeemPoints()">Redeem Points</button>
+
+    <p id="message"></p>
+  </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwFxka9iMschPbUE861Lu24-iga78K-WQPDV1x64t3_vNpcPU_mV6kGFKG1Q4rDWu0P/exec";
+    const PASSWORD = "1234"; // ضع رمز الموظف هنا
+    const API_URL = "https://script.google.com/macros/s/AKfycbxznyH_1znd4V63C1z8yiKRGwNbfWGYjIaIcaolWMvufAv7aKe-QzMg0NP_hcouvWcq/exec";
 
-    async function checkPoints() {
+    function checkPassword() {
+      const input = document.getElementById("password").value;
+      if(input === PASSWORD) {
+        document.getElementById("panel").style.display = "block";
+        document.getElementById("password").style.display = "none";
+        document.querySelector('button').style.display = "none";
+      } else {
+        alert("Incorrect password");
+      }
+    }
+
+    async function addPoints() {
       const cardID = document.getElementById("cardID").value.trim();
-      const url = `${API_URL}?action=check&cardID=${encodeURIComponent(cardID)}`;
+      const amount = parseFloat(document.getElementById("amount").value);
+      if (!cardID || isNaN(amount)) {
+        document.getElementById("message").innerText = "Enter valid Card ID and Amount";
+        return;
+      }
+      const pointsToAdd = Math.floor(amount / 10);
+      const url = `${API_URL}?action=add&cardID=${encodeURIComponent(cardID)}&points=${pointsToAdd}`;
       try {
         const resp = await fetch(url);
-        const points = await resp.text();
-        document.getElementById("result").innerText = isNaN(points) ? "Card not found" : `Your current points: ${points}`;
+        const result = await resp.text();
+        document.getElementById("message").innerText = result;
       } catch(e) {
-        document.getElementById("result").innerText = "Error occurred, please try again";
+        document.getElementById("message").innerText = "Error occurred, please try again";
+      }
+    }
+
+    async function redeemPoints() {
+      const cardID = document.getElementById("cardID").value.trim();
+      const points = parseInt(document.getElementById("redeemPoints").value);
+      if (!cardID || isNaN(points)) {
+        document.getElementById("message").innerText = "Enter valid Card ID and points";
+        return;
+      }
+      const url = `${API_URL}?action=redeem&cardID=${encodeURIComponent(cardID)}&points=${points}`;
+      try {
+        const resp = await fetch(url);
+        const result = await resp.text();
+        document.getElementById("message").innerText = result;
+      } catch(e) {
+        document.getElementById("message").innerText = "Error occurred, please try again";
       }
     }
   </script>
